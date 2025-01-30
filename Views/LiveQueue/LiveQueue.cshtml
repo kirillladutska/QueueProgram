@@ -1,0 +1,144 @@
+@{
+    ViewData["Title"] = "LiveQueue";
+}
+@{
+    Layout = "_Layout";
+}
+
+<head>
+    <link rel="stylesheet" type="text/css" href="LiveQueue.cshtml.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="queue-info">
+            <label for="QueuePlace" class="form-label">Place in queue:</label>
+            <a id="QueuePlace" class="form-label"></a>
+            <p></p>
+            <label for="QueueOption" class="form-label">Selected queue option:</label>
+            <a id="QueueOption" class="form-label"></a>
+            <p></p>
+            <label for="QueueSize" class="form-label">Queue size:</label>
+            <a id="QueueSize" class="form-label"></a>
+        </div>
+    </div>
+</body>
+
+
+
+<script>
+    let visitInfoRam = null;
+
+    function loadVisitInfo() {
+        const visitInfo = localStorage.getItem('visitInfo');
+
+        if (visitInfo) {
+            try {
+                visitInfoRam = JSON.parse(visitInfo);
+                console.log(visitInfoRam);
+                console.log("Parsed visitInfoRam:", visitInfoRam);
+                updateQueueDisplay();
+                getQueueSize();
+            } catch (error) {
+                console.error('Error parsing visitInfo:', error);
+                localStorage.removeItem('visitInfo');
+                window.location.href = '/';
+            }
+        } else {
+            window.location.href = '/';
+        }
+    }
+
+    async function updateVisitInfo() {
+        if (!visitInfoRam || !visitInfoRam.VisitId) {
+            window.location.href = '/';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/getVisitInfo/${visitInfoRam.VisitId}`);
+
+            if (response.ok) {
+                const updatedVisit = await response.json();
+                visitInfoRam = updatedVisit;
+                localStorage.setItem('visitInfo', JSON.stringify(updatedVisit));
+                updateQueueDisplay();
+                await getQueueSize();
+
+                if (updatedVisit.PlaceInQueue === 1) {
+                    handleFirstInQueue();
+                }
+            } else if (response.status === 404) {
+                localStorage.removeItem('visitInfo');
+                window.location.href = '/';
+            }
+        } catch (error) {
+            console.error('Error updating visit info:', error);
+        }
+    }
+
+    async function getQueueSize() {
+        console.log("Starting getQueueSize function");
+        console.log("Current visitInfoRam:", visitInfoRam);
+        if (!visitInfoRam || !visitInfoRam.selectedOption) {
+            console.log("Error: visitInfoRam or SelectedOption is missing");
+            return;
+        }
+
+        try {
+
+            const url = `/api/Visit/quantity/${visitInfoRam.selectedOption}`;
+            console.log("Making request to:", url);
+
+            const response = await fetch(`/api/Visit/quantity/${visitInfoRam.selectedOption}`);
+
+            console.log("Response status:", response.status);
+            console.log("Full response:", response);
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Received data:", data);
+                const queueSizeElement = document.getElementById('QueueSize');
+                console.log("Queue size element:", queueSizeElement);
+                if (queueSizeElement) {
+                    queueSizeElement.textContent = data.quantity;
+                    console.log("Updated queue size to:", data.quantity);
+                } else {
+                    console.error("Queue size element not found");
+                }
+            }else{
+                console.error("Response not OK:", response.status);
+                const errorText = await response.text();
+                console.error("Error response:", errorText);
+            }
+
+        } catch (error) {
+            console.error('Error getting queue size:', error);
+            const queueSizeElement = document.getElementById('QueueSize');
+            if (queueSizeElement) {
+                queueSizeElement.textContent = 'N/A';
+            }
+        }
+    }
+
+    function updateQueueDisplay() {
+        if (visitInfoRam) {
+            const queuePlace = document.getElementById("QueuePlace");
+            const queueOption = document.getElementById("QueueOption");
+
+            if (queuePlace && queueOption) {
+                console.log("Updating display with:", {
+                    PlaceInQueue: visitInfoRam.placeInQueue,
+                    SelectedOption: visitInfoRam.SelectedOption
+                });
+
+                queuePlace.textContent = visitInfoRam.placeInQueue;
+                queueOption.textContent = visitInfoRam.selectedOption;
+            }
+        }
+    }
+
+    window.onload = function () {
+        loadVisitInfo();
+        setInterval(updateVisitInfo, 30000);
+    };
+</script>

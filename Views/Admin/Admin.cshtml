@@ -1,0 +1,256 @@
+@inject QueueProgram.Popup.IPopupService popupService
+@{
+    ViewData["Title"] = "Admin";
+}
+@{
+    Layout = "_Layout";
+}
+
+<head>
+    <link rel="stylesheet" href="Admin.cshtml.css" />
+</head>
+
+<body>
+<div class="container">
+    <h3>Administrative Control Panel</h3>
+
+    <div class="form-group">
+        <label for="Username" class="form-label">Username:</label>
+        <input type="Username" id="Username" name="Username" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Password" class="form-label">Password:</label>
+        <input type="Password" id="Password" name="Password" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="visit-option" class="form-label">Select queue to delete person:</label>
+        <select class="form-select" id="visit-option" name="selectedOption">
+            @{
+                foreach (var option in popupService.GetOptions().options)
+                {
+                    <option>@(option)</option>
+                }
+            }
+        </select>
+    </div>
+
+    <button id="remove-first" name="remove-first">Submit deletion first person in queue</button>
+</div>
+
+@* <script src="Script.js"></script> *@
+</body>
+
+<script>
+    let submitIsClicked = false;
+</script>
+
+<script>
+    const usernameInput = document.getElementById('Username');
+    const passwordInput = document.getElementById('Password');
+    const removeFirstButton = document.getElementById('remove-first');
+
+    removeFirstButton.addEventListener('click', async function () {
+        event.preventDefault();
+        const login = {
+            Username: usernameInput.value,
+            Password: passwordInput.value
+        };
+
+        if (submitIsClicked) {
+            return;
+        }
+        else {
+            submitIsClicked = true;
+        }
+
+        var select = document.getElementById("visit-option");
+        const option = select.options[select.selectedIndex].text;
+
+        try {
+            const response = await fetch(`api/visit/deleteFirst/${option}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(login)
+            });
+
+            if (response.ok) {
+                alert("First visit in queue sucessfully deleted");
+            } else {
+                alert("You do not have the rights to delete the visit of this option or you have entered incorrect data ");
+                submitIsClicked = false;
+            }
+        } catch (error) {
+            alert("Server error");
+            submitIsClicked = false;
+        }
+    })
+</script>
+
+@* @inject QueueProgram.Popup.IPopupService popupService *@
+@* @{ *@
+@*     ViewData["Title"] = "Admin"; *@
+@* } *@
+@* @{ *@
+@*     Layout = "_Layout"; *@
+@* } *@
+@* <h1 class="mb-4">Admin Page</h1> *@
+@* *@
+@* <div class="container"> *@
+@* *@
+@*     <div class="card mb-4"> *@
+@*         <div class="card-header"> *@
+@*             <h4>Delete First Person in Queue</h4> *@
+@*         </div> *@
+@*         <div class="card-body"> *@
+@*             <form id="delete-person-form"> *@
+@*                 <div class="form-group mb-3"> *@
+@*                     <label for="Username" class="form-label">Username:</label> *@
+@*                     <input type="text" id="Username" name="Username" class="form-control" required /> *@
+@*                 </div> *@
+@* *@
+@*                 <div class="form-group mb-3"> *@
+@*                     <label for="Password" class="form-label">Password:</label> *@
+@*                     <input type="password" id="Password" name="Password" class="form-control" required /> *@
+@*                 </div> *@
+@* *@
+@*                 <div class="form-group mb-3"> *@
+@*                     <label for="visit-option" class="form-label">Select queue to delete person:</label> *@
+@*                     <select class="form-select" id="visit-option" name="selectedOption"> *@
+@*                         @{ *@
+@*                             foreach (var option in popupService.GetOptions().options) *@
+@*                             { *@
+@*                                 <option>@(option)</option> *@
+@*                             } *@
+@*                         } *@
+@*                     </select> *@
+@*                 </div> *@
+@* *@
+@*                 <button id="remove-first" name="remove-first" class="btn btn-danger">Delete First Person</button> *@
+@*             </form> *@
+@*         </div> *@
+@*     </div> *@
+@*      *@
+@*     <div class="card mb-4"> *@
+@*         <div class="card-header"> *@
+@*             <h4>Current Visits</h4> *@
+@*         </div> *@
+@*         <div class="card-body"> *@
+@*             <table class="table table-bordered"> *@
+@*                 <thead> *@
+@*                     <tr> *@
+@*                         <th>#</th> *@
+@*                         <th>Visit ID</th> *@
+@*                         <th>Visitor Name</th> *@
+@*                         <th>Option</th> *@
+@*                         <th>Actions</th> *@
+@*                     </tr> *@
+@*                 </thead> *@
+@*                 <tbody id="visits-table-body"> *@
+@*                     $1$ autofill space#1# *@
+@*                 </tbody> *@
+@*             </table> *@
+@*             <button id="refresh-visits" class="btn btn-primary mt-2">Refresh Visits</button> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
+@* *@
+@* <script> *@
+@*     let submitIsClicked = false; *@
+@* *@
+@*     const usernameInput = document.getElementById('Username'); *@
+@*     const passwordInput = document.getElementById('Password'); *@
+@*     const visitOptionSelect = document.getElementById('visit-option'); *@
+@*     const removeFirstButton = document.getElementById('remove-first'); *@
+@*     const visitsTableBody = document.getElementById('visits-table-body'); *@
+@*     const refreshVisitsButton = document.getElementById('refresh-visits'); *@
+@*      *@
+@*     removeFirstButton.addEventListener('click', async function (event) { *@
+@*         event.preventDefault(); *@
+@* *@
+@*         const login = { *@
+@*             Username: usernameInput.value, *@
+@*             Password: passwordInput.value *@
+@*         }; *@
+@* *@
+@*         if (submitIsClicked) { *@
+@*             return; *@
+@*         } else { *@
+@*             submitIsClicked = true; *@
+@*         } *@
+@* *@
+@*         const option = visitOptionSelect.options[visitOptionSelect.selectedIndex].text; *@
+@* *@
+@*         try { *@
+@*             const response = await fetch(`deleteFirst/${option}`, { *@
+@*                 method: 'DELETE', *@
+@*                 headers: { *@
+@*                     'Content-Type': 'application/json' *@
+@*                 }, *@
+@*                 body: JSON.stringify(login) *@
+@*             }); *@
+@* *@
+@*             if (response.ok) { *@
+@*                 alert("First visit in queue successfully deleted"); *@
+@*                 loadVisits(); *@
+@*             } else { *@
+@*                 alert("You do not have the rights to delete the visit of this option or you have entered incorrect data."); *@
+@*                 submitIsClicked = false; *@
+@*             } *@
+@*         } catch (error) { *@
+@*             alert("Server error"); *@
+@*             submitIsClicked = false; *@
+@*         } *@
+@*     }); *@
+@*      *@
+@*     async function loadVisits() { *@
+@*         try { *@
+@*             const response = await fetch('/api/Visit/allVisits'); *@
+@*             const data = await response.json(); *@
+@* *@
+@*             if (response.ok) { *@
+@*                 visitsTableBody.innerHTML = ''; *@
+@* *@
+@*                 data.forEach((visit, index) => { *@
+@*                     const newRow = document.createElement('tr'); *@
+@*                     newRow.innerHTML = ` *@
+@*                         <td>${index + 1}</td> *@
+@*                         <td>${visit.id}</td> *@
+@*                         <td>${visit.name}</td> *@
+@*                         <td>${visit.option}</td> *@
+@*                         <td> *@
+@*                             <button class="btn btn-danger btn-sm" onclick="deleteVisit('${visit.id}')">Delete</button> *@
+@*                         </td> *@
+@*                     `; *@
+@*                     visitsTableBody.appendChild(newRow); *@
+@*                 }); *@
+@*             } else { *@
+@*                 alert("Failed to load visits"); *@
+@*             } *@
+@*         } catch (error) { *@
+@*             console.error("Error fetching visits:", error); *@
+@*         } *@
+@*     } *@
+@*      *@
+@*     async function deleteVisit(visitId) { *@
+@*         if (!confirm("Are you sure you want to delete this visit?")) return; *@
+@* *@
+@*         try { *@
+@*             const response = await fetch(`/homesubmit/${visitId}`, { method: 'DELETE' }); *@
+@*             if (response.ok) { *@
+@*                 alert("Visit deleted successfully"); *@
+@*                 loadVisits(); *@
+@*             } else { *@
+@*                 alert("Failed to delete visit"); *@
+@*             } *@
+@*         } catch (error) { *@
+@*             console.error("Error deleting visit:", error); *@
+@*         } *@
+@*     } *@
+@* *@
+@*     refreshVisitsButton.addEventListener('click', loadVisits); *@
+@*     document.addEventListener('DOMContentLoaded', loadVisits); *@
+@* </script> *@

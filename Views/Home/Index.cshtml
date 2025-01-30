@@ -1,0 +1,108 @@
+@inject QueueProgram.Popup.IPopupService popupService
+@{
+    ViewData["Title"] = "Home";
+}
+@{
+    Layout = "_Layout";
+}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="Index.cshtml.css" />
+</head>
+
+<body>
+
+<div class="container">
+    <h3>To take place in the queue, please enter your data:</h3>
+
+    <div class="form-group">
+        <label for="visit-option" class="form-label">Visit to:</label>
+        <select class="form-select" id="visit-option" name="selectedOption">
+            @{
+                foreach (var option in popupService.GetOptions().options)
+                {
+                    <option>@(option)</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" class="form-control" id="email" name="email" required />
+    </div>
+
+    <div class="form-group">
+        <label for="phone" class="form-label">Phone:</label>
+        <input type="tel" class="form-control" id="phone" name="phone" required />
+    </div>
+
+    <div id="error-block"></div>
+
+    <button type="submit" id="submit-button" name="submit-button">Submit</button>
+</div>
+
+@* <script src="Script.js"></script> *@
+</body>
+</html>
+
+
+<script>
+    let submitIsClicked = false;
+</script>
+
+<script>
+
+    document.getElementById("submit-button").addEventListener("click", async function () {
+        if (submitIsClicked) {
+            return;
+        }
+
+        else {
+            submitIsClicked = true;
+        }
+
+        const errorBlock = document.getElementById("error-block");
+
+        var select = document.getElementById("visit-option");
+        var text = select.options[select.selectedIndex].text;
+
+        let formData = {
+            selectedOption: text,
+            email: document.getElementById("email").value,
+            phone: document.getElementById("phone").value
+        };
+
+        console.log('FormData:', formData);
+
+        try {
+            const response = await fetch('/homesubmit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.log('Error data:', errorData);
+                errorBlock.textContent = errorData.errorMessage;
+                errorBlock.style.display = "block";
+                submitIsClicked = false;
+            } else {
+
+                const visitResponse = await response.json();
+                //localStorage.setItem('visitInfo', JSON.stringify(visitResponse));
+                window.location.href = "livequeue";
+            }
+        } catch (error) {
+            errorBlock.style.display = "block";
+            submitIsClicked = false;
+        }
+    });
+</script>
