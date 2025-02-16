@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-public class VisitList
+public class VisitEntity
 {
     [Key]
     public Guid VisitId { get; set; }
@@ -9,12 +9,12 @@ public class VisitList
     public string SelectedOption { get; set; }
     public int PlaceInQueue { get; set; }
 
-    public VisitList() 
+    public VisitEntity() 
     {
         VisitId = Guid.NewGuid();
     }
 
-    public VisitList(string selectedOption, string email, string phone, int placeInQueue)
+    public VisitEntity(string selectedOption, string email, string phone, int placeInQueue)
     {
         VisitId = Guid.NewGuid();
         SelectedOption = selectedOption;
